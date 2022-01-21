@@ -1,4 +1,5 @@
 
-node_modules/
-data/temp/
+.DS_Store
 data/input/
+data/temp/
+node_modules/
