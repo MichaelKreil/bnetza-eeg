@@ -8,17 +8,6 @@ const { XMLParser } = require('fast-xml-parser');
 
 process.chdir(__dirname);
 
-
-let windKeyFilter = keyFilter(
-	'ClusterOstsee,Kraftwerksnummer,NetzbetreiberpruefungStatus,NetzbetreiberpruefungDatum,AnlagenbetreiberMastrNummer,Gemarkung,FlurFlurstuecknummern,StrasseNichtGefunden,Hausnummer_nv,HausnummerNichtGefunden,Ort,EinheitSystemstatus,EinheitBetriebsstatus,NichtVorhandenInMigriertenEinheiten,DatumDesBetreiberwechsels,DatumRegistrierungDesBetreiberwechsels,NameStromerzeugungseinheit,Weic_nv,Kraftwerksnummer_nv,Energietraeger,AnschlussAnHoechstOderHochSpannung,FernsteuerbarkeitNb,FernsteuerbarkeitDv,FernsteuerbarkeitDr,Einspeisungsart,GenMastrNummer,Lage,Hersteller,Technologie,Typenbezeichnung,Rotorblattenteisungssystem,AuflageAbschaltungLeistungsbegrenzung,Adresszusatz,AuflagenAbschaltungEiswurf,AuflagenAbschaltungSchallimmissionsschutzNachts,AuflagenAbschaltungSchallimmissionsschutzTagsueber,AuflagenAbschaltungSchattenwurf,AuflagenAbschaltungSonstige,AuflagenAbschaltungTierschutz,ClusterNordsee,Hausnummer,Kuestenentfernung,Seelage,Strasse,Wassertiefe,Weic,WeicDisplayName',
-	'LokationMaStRNummer,EinheitMastrNummer,EegMaStRNummer,Land,Bundesland,Landkreis,Gemeinde,DatumBeginnVoruebergehendeStilllegung,Gemeindeschluessel,Postleitzahl,DatumEndgueltigeStilllegung,DatumWiederaufnahmeBetrieb,DatumLetzteAktualisierung,Laengengrad,Breitengrad,Registrierungsdatum,Inbetriebnahmedatum,Bruttoleistung,Nettonennleistung,Nabenhoehe,Rotordurchmesser,GeplantesInbetriebnahmedatum'
-)
-
-let solarKeyFilter = keyFilter(
-	'Weic,Strasse,StrasseNichtGefunden,Hausnummer,Hausnummer_nv,HausnummerNichtGefunden,Ort,EinheitSystemstatus,EinheitBetriebsstatus,NichtVorhandenInMigriertenEinheiten,NameStromerzeugungseinheit,Weic_nv,Kraftwerksnummer_nv,Energietraeger,FernsteuerbarkeitNb,Einspeisungsart,ZugeordneteWirkleistungWechselrichter,GemeinsamerWechselrichterMitSpeicher,Lage,Leistungsbegrenzung,EinheitlicheAusrichtungUndNeigungswinkel,Hauptausrichtung,HauptausrichtungNeigungswinkel,Nutzungsbereich,NetzbetreiberpruefungStatus,NetzbetreiberpruefungDatum,AnlagenbetreiberMastrNummer,Adresszusatz,AnschlussAnHoechstOderHochSpannung,ArtDerFlaecheIds,DatumDesBetreiberwechsels,DatumRegistrierungDesBetreiberwechsels,Einsatzverantwortlicher,FernsteuerbarkeitDr,FernsteuerbarkeitDv,FlurFlurstuecknummern,Gemarkung,GenMastrNummer,InAnspruchGenommeneAckerflaeche,InAnspruchGenommeneFlaeche,Kraftwerksnummer,Nebenausrichtung,NebenausrichtungNeigungswinkel,WeicDisplayName',
-	'LokationMaStRNummer,EinheitMastrNummer,EegMaStRNummer,Land,Bundesland,Landkreis,Gemeinde,Gemeindeschluessel,Postleitzahl,GeplantesInbetriebnahmedatum,DatumEndgueltigeStilllegung,Registrierungsdatum,Laengengrad,Breitengrad,Inbetriebnahmedatum,DatumLetzteAktualisierung,Land,Bruttoleistung,Nettonennleistung,AnzahlModule,DatumBeginnVoruebergehendeStilllegung,DatumWiederaufnahmeBetrieb'
-)
-
 start()
 
 async function start() {
@@ -28,24 +17,36 @@ async function start() {
 	let zipEntries = zip.getEntries();
 	zipEntries.sort((a,b) => a.header.time < b.header.time ? -1 : 1);
 
-	//let filenames = new Map();
 	zipEntries.forEach(e => {
-		let name = e.entryName.replace(/[_\.].*/,'');
-	//	if (!filenames.has(name)) filenames.set(name, [name, 0]);
-	//	filenames.get(name)[1] += e.header.size;
+		let entryName = e.entryName;
+		let name = entryName.replace(/[_\.].*/,'');
+		//if (/^(.*_1|[^_]+)\.xml/.test(entryName)) console.log(entryName);
 	});
-	//filenames = Array.from(filenames.values()).map(e => e[0]+': '+(e[1]/1048576).toFixed(0));
-	//console.log(filenames.join('\n'));
 
-	await convertData('EinheitenWind', '../data/temp/wind.geojsonl', windKeyFilter);
+	await convertData('Wind');
+	await convertData('Solar');
+	await convertData('Biomasse');
+	await convertData('GeoSolarthermieGrubenKlaerschlammDruckentspannung', 'other');
+	await convertData('Kernkraft');
+	await convertData('Verbrennung');
+	await convertData('Wasser');
 
-	await convertData('EinheitenSolar','../data/temp/solar.geojsonl', solarKeyFilter);
 
-	async function convertData(filter, filename, cbEntry) {
-		console.log('start', filter);
 
-		let fd = fs.openSync(filename, 'w');
-		let files = zipEntries.filter(e => e.entryName.startsWith(filter));
+
+
+	async function convertData(einheit, nameNeu = einheit) {
+		let tmpFilename = `../data/temp/tmp.tmp`;
+		let resFilename = `../data/temp/${einheit.toLowerCase()}.geojsonl`;
+
+		if (fs.existsSync(resFilename)) return console.log('skip', einheit);;
+
+		console.log('start', einheit);
+
+		let keyFilter = KeyFilter();
+
+		let fd = fs.openSync(tmpFilename, 'w');
+		let files = zipEntries.filter(e => e.entryName.startsWith('Einheiten'+einheit));
 
 		for (let file of files) {
 
@@ -64,7 +65,7 @@ async function start() {
 			let buffers = [];
 
 			for (let entry of data) {
-				cbEntry(entry);
+				keyFilter(entry);
 
 				buffers.push(Buffer.from(JSON.stringify({
 					type: 'Feature',
@@ -76,24 +77,38 @@ async function start() {
 			fs.writeSync(fd, Buffer.concat(buffers));
 		}
 
-		console.log('finished', filter);
+		console.log('finished', einheit);
 		fs.closeSync(fd);
+
+		if (keyFilter.errors) process.exit();
+
+		fs.renameSync(tmpFilename, resFilename);
 	}
 }
 
-function keyFilter(keysOut, keysIn) {
+function KeyFilter() {
 	let keys = new Map();
-	keysOut.split(',').forEach(k => keys.set(k,1));
-	keysIn .split(',').forEach(k => keys.set(k,2));
 
-	return obj => {
+	let list = fs.readFileSync('../data/static/bnetza_keys.txt', 'utf8');
+	list = list.split(/-+/);
+	if (list.length !== 2) throw Error();
+	list[0].split('\n').forEach(k => keys.set(k,1));
+	list[1].split('\n').forEach(k => keys.set(k,2));
+
+	let func = obj => {
 		Object.keys(obj).forEach(key => {
 			let result = keys.get(key);
 			
-			if (!result) return console.log('unknown', key, obj[key]);
+			if (!result) {
+				func.errors = true;
+				console.log('unknown', key, obj[key])
+				return;
+			}
 			
 			if (result === 1) delete obj[key];
 		})
 		return obj;
 	}
+
+	return func;
 }
