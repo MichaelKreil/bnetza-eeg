@@ -10,7 +10,7 @@ process.chdir(__dirname);
 
 start()
 
-async function start() {
+function start() {
 	const filename = '../data/input/Gesamtdatenexport_20220114__837270ddf17544399ae66049d12e18e0.zip';
 
 	let zip = new AdmZip(filename);
@@ -22,28 +22,25 @@ async function start() {
 		let name = entryName.replace(/[_\.].*/,'');
 		//if (/^(.*_1|[^_]+)\.xml/.test(entryName)) console.log(entryName);
 	});
+	
+	let keyFilter = KeyFilter();
 
-	await convertData('Wind');
-	await convertData('Solar');
-	await convertData('Biomasse');
-	await convertData('GeoSolarthermieGrubenKlaerschlammDruckentspannung', 'other');
-	await convertData('Kernkraft');
-	await convertData('Verbrennung');
-	await convertData('Wasser');
+	convertData('Wind');
+	convertData('Solar');
+	convertData('Biomasse');
+	convertData('GeoSolarthermieGrubenKlaerschlammDruckentspannung', 'other');
+	convertData('Kernkraft');
+	convertData('Verbrennung');
+	convertData('Wasser');
 
 
-
-
-
-	async function convertData(einheit, nameNeu = einheit) {
+	function convertData(einheit, nameNeu = einheit.toLowerCase()) {
 		let tmpFilename = `../data/temp/tmp.tmp`;
-		let resFilename = `../data/temp/${einheit.toLowerCase()}.geojsonl`;
+		let resFilename = `../data/temp/${nameNeu}.geojsonl`;
 
 		if (fs.existsSync(resFilename)) return console.log('skip', einheit);;
 
 		console.log('start', einheit);
-
-		let keyFilter = KeyFilter();
 
 		let fd = fs.openSync(tmpFilename, 'w');
 		let files = zipEntries.filter(e => e.entryName.startsWith('Einheiten'+einheit));
@@ -52,15 +49,7 @@ async function start() {
 
 			console.log('   convert', file.entryName);
 
-			let data = file.getData();
-			if (data[0] !== 255) throw Error();
-			if (data[1] !== 254) throw Error();
-			data = data.slice(2);
-			data = data.toString('utf16le');
-			data = (new XMLParser()).parse(data);
-
-			data = data[Object.keys(data)[0]];
-			data = data[Object.keys(data)[0]];
+			let data = load(file);
 
 			let buffers = [];
 
@@ -84,31 +73,75 @@ async function start() {
 
 		fs.renameSync(tmpFilename, resFilename);
 	}
-}
 
-function KeyFilter() {
-	let keys = new Map();
+	function load(file) {
+		if (typeof file === 'string') {
+			file = zipEntries.find(e => e.entryName === file);
+		}
 
-	let list = fs.readFileSync('../data/static/bnetza_keys.txt', 'utf8');
-	list = list.split(/-+/);
-	if (list.length !== 2) throw Error();
-	list[0].split('\n').forEach(k => keys.set(k,1));
-	list[1].split('\n').forEach(k => keys.set(k,2));
+		let data = file.getData();
+		if (data[0] !== 255) throw Error();
+		if (data[1] !== 254) throw Error();
+		data = data.slice(2);
+		data = data.toString('utf16le');
+		data = (new XMLParser()).parse(data);
+		data = data[Object.keys(data)[0]];
+		data = data[Object.keys(data)[0]];
 
-	let func = obj => {
-		Object.keys(obj).forEach(key => {
-			let result = keys.get(key);
-			
-			if (!result) {
+		return data;
+	}
+
+	function KeyFilter(lookups) {
+		let keys = new Map();
+
+		let categories = load('Katalogkategorien.xml');
+		categories.forEach(c => c.lookup = new Map());
+		let catLookupId = new Map(categories.map(c => [c.Id,c]));
+		let catLookupName = new Map(categories.map(c => [c.Name,c]));
+
+		let values = load('Katalogwerte.xml');
+		values.forEach(v => catLookupId.get(v.KatalogKategorieId).lookup.set(v.Id, v.Wert))
+
+		let list = fs.readFileSync('../data/static/bnetza_keys.tsv', 'utf8').split('\n');
+		list.forEach(line => {
+			line = line.split('\t');
+			switch (line[1]) {
+				case 'ignore': keys.set(line[0], false); break;
+				case 'value': {
+					let cat = catLookupName.get(line[0]);
+					if (cat) {
+						keys.set(line[0], cat.lookup);
+						break;
+					}
+					keys.set(line[0], true);
+				}
+			}
+		})
+
+		let func = obj => {
+			Object.keys(obj).forEach(key => {
+				let result = keys.get(key);
+
+				if (result === false) {
+					delete obj[key];
+					return
+				}
+
+				if (result === true) return;
+
+				if (result) {
+					obj[key] = result.get(obj[key]);
+					return
+				}
+				
 				func.errors = true;
 				console.log('unknown', key, obj[key])
 				return;
-			}
-			
-			if (result === 1) delete obj[key];
-		})
-		return obj;
+			})
+			return obj;
+		}
+
+		return func;
 	}
 
-	return func;
 }
