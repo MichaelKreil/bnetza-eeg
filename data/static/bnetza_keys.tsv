@@ -6,7 +6,7 @@ AnteiligNutzungsberechtigte	ignore
 AnzahlModule	value
 AnzeigeEinerStilllegung	value
 ArtDerFlaecheIds	ignore
-ArtDerStilllegung	value
+ArtDerStilllegung	lookup
 ArtDerWasserkraftanlage	ignore
 ArtDesZuflusses	ignore
 AuflageAbschaltungLeistungsbegrenzung	ignore
@@ -20,9 +20,9 @@ BestandteilGrenzkraftwerk	ignore
 Biomasseart	ignore
 Breitengrad	value
 Bruttoleistung	value
-Bundesland	value
-ClusterNordsee	value
-ClusterOstsee	value
+Bundesland	lookup
+ClusterNordsee	lookup
+ClusterOstsee	lookup
 DatumBaubeginn	ignore
 DatumBeginnVorlaeufigenOderEndgueltigenStilllegung	value
 DatumBeginnVoruebergehendeStilllegung	value
@@ -39,7 +39,7 @@ EinheitSystemstatus	ignore
 Einsatzort	ignore
 Einsatzverantwortlicher	ignore
 Einspeisungsart	ignore
-Energietraeger	value
+Energietraeger	lookup
 FernsteuerbarkeitDr	ignore
 FernsteuerbarkeitDv	ignore
 FernsteuerbarkeitNb	ignore
@@ -66,7 +66,7 @@ Kuestenentfernung	ignore
 KwkMaStRNummer	value
 Laengengrad	value
 Lage	ignore
-Land	value
+Land	lookup
 Landkreis	value
 Leistungsbegrenzung	ignore
 LokationMaStRNummer	value

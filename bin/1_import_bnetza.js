@@ -94,32 +94,22 @@ function start() {
 	function KeyFilter(lookups) {
 		let keys = new Map();
 
-		let categories = load('Katalogkategorien.xml');
-		categories.forEach(c => c.lookup = new Map());
-		let catLookupId = new Map(categories.map(c => [c.Id,c]));
-		let catLookupName = new Map(categories.map(c => [c.Name,c]));
-
-		let values = load('Katalogwerte.xml');
-		values.forEach(v => catLookupId.get(v.KatalogKategorieId).lookup.set(v.Id, v.Wert))
+		let valueLookup = load('Katalogwerte.xml');
+		valueLookup = new Map(valueLookup.map(v => [v.Id, v.Wert]));
 
 		let list = fs.readFileSync('../data/static/bnetza_keys.tsv', 'utf8').split('\n');
 		list.forEach(line => {
 			line = line.split('\t');
 			switch (line[1]) {
 				case 'ignore': keys.set(line[0], false); break;
-				case 'value': {
-					let cat = catLookupName.get(line[0]);
-					if (cat) {
-						keys.set(line[0], cat.lookup);
-						break;
-					}
-					keys.set(line[0], true);
-				}
+				case 'value': keys.set(line[0], true); break;
+				case 'lookup': keys.set(line[0], valueLookup); break;
 			}
 		})
 
 		let func = obj => {
 			Object.keys(obj).forEach(key => {
+				//console.log(key);
 				let result = keys.get(key);
 
 				if (result === false) {
@@ -130,7 +120,12 @@ function start() {
 				if (result === true) return;
 
 				if (result) {
-					obj[key] = result.get(obj[key]);
+					let v = result.get(obj[key]);
+					if (!v) {
+						console.log(`obj.${key} = `+JSON.stringify(obj[key]))
+						func.errors = true;
+					}
+					obj[key] = v;
 					return
 				}
 				
