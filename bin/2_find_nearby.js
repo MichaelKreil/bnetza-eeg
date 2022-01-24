@@ -65,14 +65,14 @@ async function start() {
 		
 		let gebaeudeIds = [];
 		if (radius > 5) {
-			p.circle = turf.circle(p.point, radius/1000);
-			let bbox = turf.bbox(p.circle);
+			let circle = turf.circle(p.point, radius/1000);
+			let bbox = turf.bbox(circle);
 			buildings.forEachInBBox(bbox, building => {
-				if (turf.booleanIntersects(p.circle, building)) gebaeudeIds.push(building.fid);
+				if (turf.booleanIntersects(circle, building)) gebaeudeIds.push(building.fid);
 			})
-			entry.geometry = p.circle.geometry;
+			entry.geometry = circle.geometry;
 		}
-		entry.properties.gebaeudeIds = gebaeudeIds;
+		entry.properties.gebaeudeIds = gebaeudeIds.join(',');
 		
 		delete entry.properties.Bundesland
 		allResults.push(entry);
