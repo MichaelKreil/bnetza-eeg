@@ -18,12 +18,12 @@ const workerCount = (os.type() === 'Darwin') ? 1 : os.cpus().length;
 
 const mercator = {
 	x: v => (v+180)/360,
-	y: v => 0.5*(1+Math.log(Math.tan(Math.PI*(1+v/90)/4))/Math.PI),
+	y: v => 0.5*(1-Math.log(Math.tan(Math.PI*(1+v/90)/4))/Math.PI),
 }
 
 const demercator = {
 	x: v => v*360-180,
-	y: v => (Math.atan(Math.exp((v*2-1)*Math.PI))*4/Math.PI-1)*90,
+	y: v => (Math.atan(Math.exp((1-v*2)*Math.PI))*4/Math.PI-1)*90,
 }
 
 
@@ -32,9 +32,9 @@ simpleCluster(async worker => {
 
 	let bboxTilesGermany = [
 		Math.floor(mercator.x(bboxGermany[0])*zoomLevelScale/tileCount),
-		Math.floor(mercator.y(bboxGermany[1])*zoomLevelScale/tileCount),
+		Math.floor(mercator.y(bboxGermany[3])*zoomLevelScale/tileCount),
 		Math.ceil( mercator.x(bboxGermany[2])*zoomLevelScale/tileCount),
-		Math.ceil( mercator.y(bboxGermany[3])*zoomLevelScale/tileCount),
+		Math.ceil( mercator.y(bboxGermany[1])*zoomLevelScale/tileCount),
 	]
 
 	let todos = [];
@@ -63,9 +63,9 @@ simpleCluster(async worker => {
 			]
 			let bboxCoord = [
 				demercator.x(bboxTiles[0]/zoomLevelScale),
-				demercator.y(bboxTiles[1]/zoomLevelScale),
-				demercator.x(bboxTiles[2]/zoomLevelScale),
 				demercator.y(bboxTiles[3]/zoomLevelScale),
+				demercator.x(bboxTiles[2]/zoomLevelScale),
+				demercator.y(bboxTiles[1]/zoomLevelScale),
 			]
 
 			console.log(bboxTiles, bboxCoord);
