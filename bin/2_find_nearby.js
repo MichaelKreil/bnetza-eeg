@@ -1,6 +1,8 @@
 "use strict"
 
 const fs = require('fs');
+const { resolve } = require('path');
+const child_process = require('child_process');
 const turf = require('@turf/turf');
 const { findBundesland } = require('../lib/bundesland.js');
 const buildings = require('../lib/gebaeude.js');
@@ -30,6 +32,7 @@ async function start() {
 		p.bundesland = findBundesland(p.point);
 		if (!p.bundesland) continue;
 		p.bundesland = p.bundesland.properties.GEN;
+		delete p.Bundesland;
 
 		if (!p.Nabenhoehe || !p.Rotordurchmesser) continue;
 
@@ -60,18 +63,18 @@ async function start() {
 		}
 
 		
-		p.circle = turf.circle(p.point, radius/1000);
 		let gebaeudeIds = [];
 		if (radius > 5) {
+			p.circle = turf.circle(p.point, radius/1000);
 			let bbox = turf.bbox(p.circle);
 			buildings.forEachInBBox(bbox, building => {
 				if (turf.booleanIntersects(p.circle, building)) gebaeudeIds.push(building.fid);
 			})
+			entry.geometry = p.circle.geometry;
 		}
 		entry.properties.gebaeudeIds = gebaeudeIds;
 		
-		entry.geometry = p.circle.geometry;
-
+		delete entry.properties.Bundesland
 		allResults.push(entry);
 	}
 
@@ -81,5 +84,17 @@ async function start() {
 	}
 
 	console.log('allResults:', allResults.length);
-	fs.writeFileSync('../data/temp/wind_data.geojson', JSON.stringify(allResults));
+
+	let filenameGeoJSON = resolve(__dirname, '../data/temp/wind_data.geojson');
+	let filenameGPKG = resolve(__dirname, '../data/temp/wind_data.gpkg');
+
+	fs.writeFileSync(filenameGeoJSON, JSON.stringify(allResults));
+
+	if (fs.existsSync(filenameGPKG)) fs.unlinkSync(filenameGPKG);
+	
+	child_process.spawnSync(
+		'ogr2ogr',
+		['-progress','-f','GPKG','-overwrite',filenameGPKG,filenameGeoJSON],
+		{ stdio:'inherit' }
+	)
 }
