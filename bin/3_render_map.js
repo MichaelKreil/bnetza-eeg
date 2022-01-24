@@ -105,8 +105,8 @@ simpleCluster(async worker => {
 
 	let buildingIds = new Set();
 	todo.winds.forEach(feature => {
-		if (feature.geometry.type === 'Point') return;
 		feature.gebaeudeIds = [];
+		if (feature.geometry.type === 'Point') return;
 		if (feature.properties.gebaeudeIds.length > 3) {
 			feature.gebaeudeIds = feature.properties.gebaeudeIds.split(',').map(id => parseInt(id, 10));
 		}
