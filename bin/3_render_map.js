@@ -79,6 +79,14 @@ simpleCluster(async worker => {
 			fs.writeFileSync(dataFilename, data);
 		}
 
+		let zoom = renderZoomLevel - Math.round(Math.log2(tileCount));
+		let tileFilename = resolve(__dirname, '../docs/tiles/'+zoom+'/'+todo.y+'/'+todo.x+'.png');
+
+		if (fs.existsSync(tileFilename)) {
+			console.log('skip');
+			return;
+		}
+
 		await worker(dataFilename)
 	})
 }, async filename => {
