@@ -83,7 +83,7 @@ async function start() {
 		features:allResults,
 	}
 
-	console.log('allResults:', allResults.length);
+	console.log('allResults:', allResults.features.length);
 
 	let filenameGeoJSON = resolve(__dirname, '../data/temp/wind_data.geojson');
 	let filenameGPKG = resolve(__dirname, '../data/temp/wind_data.gpkg');
