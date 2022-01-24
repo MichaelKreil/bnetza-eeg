@@ -68,7 +68,6 @@ simpleCluster(async worker => {
 				demercator.y(bboxTiles[1]/zoomLevelScale),
 			]
 
-			console.log(bboxTiles, bboxCoord);
 			let data = {
 				buildings: buildingDB.getAll(bboxCoord),
 				winds: windDB.getAll(bboxCoord),
@@ -183,4 +182,4 @@ simpleCluster(async worker => {
 			})
 		}
 	}
-}, workerCount === 0)
+}, workerCount === 1)
