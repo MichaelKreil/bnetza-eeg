@@ -4,7 +4,6 @@ const fs = require('fs');
 const zlib = require('zlib');
 const os = require('os');
 const { resolve } = require('path');
-const canvas = require('canvas');
 const { forParallel, simpleCluster } = require('../lib/helper.js');
 
 
