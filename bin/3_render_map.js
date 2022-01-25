@@ -149,11 +149,12 @@ simpleCluster(async worker => {
 					xi*tileSize, yi*tileSize, tileSize*scale, tileSize*scale,
 					0, 0, tileSize, tileSize,
 				)
-				let filenamePng = resolve(folder, (todo.x*count+xi)+'.png');
+				
 				let buffer = canvasTile.toBuffer('image/png');
 				if (buffer.length <= 872) continue;
+
+				let filenamePng = resolve(folder, (todo.x*count+xi)+'.png');
 				fs.writeFileSync(filenamePng, buffer);
-				fs.spawnSync('pngquant', ['--force', '--ext', '.png', filenamePng])
 			}
 		}
 		zoom--;
