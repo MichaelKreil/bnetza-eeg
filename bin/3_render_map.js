@@ -83,10 +83,7 @@ simpleCluster(async worker => {
 		let zoom = renderZoomLevel - Math.round(Math.log2(tileCount));
 		let tileFilename = resolve(__dirname, '../docs/tiles/'+zoom+'/'+todo.y+'/'+todo.x+'.png');
 
-		if (fs.existsSync(tileFilename)) {
-			console.log('skip');
-			return;
-		}
+		if (fs.existsSync(tileFilename)) return;
 
 		await worker(dataFilename)
 	})
