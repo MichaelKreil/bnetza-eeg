@@ -5,6 +5,7 @@ const zlib = require('zlib');
 const os = require('os');
 const { resolve } = require('path');
 const { forParallel, simpleCluster } = require('../lib/helper.js');
+const { colors } = require('./config.js');
 
 
 const bboxGermany = [5.9, 47.3, 15.1, 55.0]; // Deutschland
@@ -52,7 +53,7 @@ simpleCluster(async worker => {
 	await forParallel(todos, workerCount, async (todo, i) => {
 		process.stderr.write('\r'+(100*i/todos.length).toFixed(2)+'%');
 
-		let dataFolder = resolve(__dirname, '../cache/'+todo.y);
+		let dataFolder = resolve(__dirname, '../cache/geometry/'+todo.y);
 		fs.mkdirSync(dataFolder, {recursive:true});
 		let dataFilename = resolve(dataFolder, todo.x+'.json.gz');
 
@@ -115,28 +116,37 @@ simpleCluster(async worker => {
 	todo.winds.sort((a,b) => a.gebaeudeIds.length - b.gebaeudeIds.length)
 	todo.winds.forEach(feature => {
 		if (feature.geometry.type === 'Point') return;
-		ctx.fillStyle = (feature.gebaeudeIds.length > 0) ? '#fcc' : '#ccf';
+		ctx.fillStyle = (feature.gebaeudeIds.length > 0) ? colors.windAreaHit : colors.windArea;
 		ctx.beginPath();
 		drawArea(feature.geometry);
 		ctx.fill();
 	})
 
 	todo.buildings.forEach(building => {
-		ctx.fillStyle = buildingIds.has(building.fid) ? '#f00' : '#000';
+		if (building.properties.isWohngebaeude) {
+			if (buildingIds.has(building.fid)) {
+				ctx.fillStyle = colors.wohnhausHit;
+			} else {
+				ctx.fillStyle = colors.wohnhaus;
+			}
+		} else {
+			ctx.fillStyle = colors.nichtWohnhaus;
+		}
+		
 		ctx.beginPath();
 		drawArea(building.geometry);
 		ctx.fill();
 	})
 
-	todo.winds.forEach(feature => {
-		ctx.fillStyle = (feature.gebaeudeIds.length > 0) ? '#f88' : '#88f';
-		ctx.strokeStyle = (feature.gebaeudeIds.length > 0) ? '#f00' : '#00f';
-		drawSymbol([feature.properties.Laengengrad, feature.properties.Breitengrad]);
-	})
-
 	let canvasTile = createCanvas(tileSize, tileSize);
 	let ctxTile = canvasTile.getContext('2d');
 	ctxTile.globalCompositeOperation = 'copy';
+
+	todo.winds.forEach(feature => {
+		feature.x = (mercator.x(point[0])*zoomLevelScale - todo.x*tileCount)*tileSize;
+		feature.y = (mercator.y(point[1])*zoomLevelScale - todo.y*tileCount)*tileSize;
+		feature.c = (feature.gebaeudeIds.length > 0) ? colors.windDotHit : colors.windDot;
+	})
 
 	let zoom = renderZoomLevel;
 	for (let count = tileCount; count >= 1; count /= 2) {
@@ -150,7 +160,30 @@ simpleCluster(async worker => {
 					xi*tileSize*scale, yi*tileSize*scale, tileSize*scale, tileSize*scale,
 					0, 0, tileSize, tileSize,
 				)
+
+				if (count === 1) {
+					// save baselayer background
+					let dataFolder = resolve(__dirname, '../cache/tiles/'+todo.y);
+					fs.mkdirSync(dataFolder, {recursive:true});
+
+					let buffer = canvasTile.toBuffer('image/png');
+					if (buffer.length <= 872) continue;
+
+					let filenamePng = resolve(dataFolder, (todo.x*count+xi)+'.png');
+					fs.writeFileSync(filenamePng, buffer);
+				}
+
+				// overlay wind dots
+				todo.winds.forEach(feature => {
+					let x = feature.x/scale - xi*tileSize;
+					let y = feature.y/scale - yi*tileSize;
+					ctx.fillStyle = feature.c;
+					ctx.beginPath();
+					ctx.arc(x,y,5,0,2*Math.PI);
+					ctx.fill();
+				})
 				
+				// save tile
 				let buffer = canvasTile.toBuffer('image/png');
 				if (buffer.length <= 872) continue;
 
@@ -159,15 +192,6 @@ simpleCluster(async worker => {
 			}
 		}
 		zoom--;
-	}
-
-	function drawSymbol(point) {
-		let x = (mercator.x(point[0])*zoomLevelScale - todo.x*tileCount)*tileSize;
-		let y = (mercator.y(point[1])*zoomLevelScale - todo.y*tileCount)*tileSize;
-		ctx.beginPath();
-		ctx.arc(x,y,8,0,2*Math.PI);
-		ctx.fill();
-		ctx.stroke();
 	}
 
 	function drawArea(geometry) {
