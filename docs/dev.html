@@ -35,17 +35,17 @@
 						let map = L.map('map', {
 							center: [49.5,10.7],
 							zoom:11,
-							maxZoom:16,
+							maxZoom:15,
 							maxBounds: [[47.3,5.9],[55.0,15.1]],
 							layers: [
 								L.tileLayer('http://168.119.98.135:8080/tiles/{z}/{y}/{x}.png', {
 									noWrap:true,
 									detectRetina:false,
-									maxNativeZoom:16,
+									maxNativeZoom:15,
 								}),
 								L.tileLayer('http://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png', {
 									detectRetina:false,
-									maxNativeZoom:16,
+									maxNativeZoom:15,
 								})
 							]
 						});
