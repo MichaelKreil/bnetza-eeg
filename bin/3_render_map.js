@@ -95,6 +95,8 @@ simpleCluster(async worker => {
 	todo = zlib.gunzipSync(todo);
 	todo = JSON.parse(todo);
 
+	if ((todo.buildings.length === 0) && (todo.winds.length === 0)) return;
+
 	const { createCanvas } = require('canvas');
 
 	let size = tileSize*tileCount;
@@ -150,8 +152,11 @@ simpleCluster(async worker => {
 					xi*tileSize, yi*tileSize, tileSize*scale, tileSize*scale,
 					0, 0, tileSize, tileSize,
 				)
-				let filename = resolve(folder, (todo.x*count+xi)+'.png');
-				fs.writeFileSync(filename, canvasTile.toBuffer('image/png'));
+				let filenamePng = resolve(folder, (todo.x*count+xi)+'.png');
+				let buffer = canvasTile.toBuffer('image/png');
+				if (buffer.length <= 872) continue;
+				fs.writeFileSync(filenamePng, buffer);
+				fs.spawnSync('pngquant', ['--force', '--ext', '.png', filenamePng])
 			}
 		}
 		zoom--;
