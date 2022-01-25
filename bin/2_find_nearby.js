@@ -68,6 +68,7 @@ async function start() {
 			let circle = turf.circle(p.point, radius/1000);
 			let bbox = turf.bbox(circle);
 			buildings.forEachInBBox(bbox, building => {
+				if (!building.properties.isWohngebaeude) return;
 				if (turf.booleanIntersects(circle, building)) gebaeudeIds.push(building.fid);
 			})
 			entry.geometry = circle.geometry;
