@@ -121,20 +121,19 @@ simpleCluster(async worker => {
 		ctx.fill();
 	})
 
+	ctx.strokeStyle = colors.wohnhaus;
+	ctx.lineWidth = 1.5;
 	todo.buildings.forEach(building => {
 		if (building.properties.isWohngebaeude) {
-			if (buildingIds.has(building.fid)) {
-				ctx.fillStyle = colors.wohnhausHit;
-			} else {
-				ctx.fillStyle = colors.wohnhaus;
-			}
+			ctx.fillStyle = buildingIds.has(building.fid) ? colors.wohnhausHit : colors.wohnhaus;
+			ctx.beginPath();
+			drawArea(building.geometry);
+			ctx.fill();
 		} else {
-			ctx.fillStyle = colors.nichtWohnhaus;
+			ctx.beginPath();
+			drawArea(building.geometry);
+			ctx.stroke();
 		}
-		
-		ctx.beginPath();
-		drawArea(building.geometry);
-		ctx.fill();
 	})
 
 	let canvasTile = createCanvas(tileSize, tileSize);
@@ -176,10 +175,10 @@ simpleCluster(async worker => {
 				todo.winds.forEach(feature => {
 					let x = feature.x/scale - xi*tileSize;
 					let y = feature.y/scale - yi*tileSize;
-					ctx.fillStyle = feature.c;
-					ctx.beginPath();
-					ctx.arc(x,y,5,0,2*Math.PI);
-					ctx.fill();
+					ctxTile.fillStyle = feature.c;
+					ctxTile.beginPath();
+					ctxTile.arc(x,y,5,0,2*Math.PI);
+					ctxTile.fill();
 				})
 				
 				// save tile
