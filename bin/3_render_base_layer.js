@@ -142,8 +142,8 @@ simpleCluster(async worker => {
 	ctxTile.globalCompositeOperation = 'copy';
 
 	todo.winds.forEach(feature => {
-		feature.x = (mercator.x(point[0])*zoomLevelScale - todo.x*tileCount)*tileSize;
-		feature.y = (mercator.y(point[1])*zoomLevelScale - todo.y*tileCount)*tileSize;
+		feature.x = (mercator.x(feature.properties.Laengengrad)*zoomLevelScale - todo.x*tileCount)*tileSize;
+		feature.y = (mercator.y(feature.properties.Breitengrad)*zoomLevelScale - todo.y*tileCount)*tileSize;
 		feature.c = (feature.gebaeudeIds.length > 0) ? colors.windDotHit : colors.windDot;
 	})
 
