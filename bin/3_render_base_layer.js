@@ -5,13 +5,12 @@ const zlib = require('zlib');
 const os = require('os');
 const { resolve } = require('path');
 const { forParallel, simpleCluster } = require('../lib/helper.js');
-const { colors } = require('./config.js');
+const { colors, renderZoomLevel } = require('./config.js');
 
 
 const bboxGermany = [5.9, 47.3, 15.1, 55.0]; // Deutschland
 //const bboxGermany = [8.977, 47.270, 13.836, 50.565]; // Bayern
 //const bboxGermany = [13.091, 52.334, 13.743, 52.677]; // Berlin
-const renderZoomLevel = 16;
 const zoomLevelScale = Math.pow(2, renderZoomLevel);
 const tileSize = 256;
 const tileCount = 16;

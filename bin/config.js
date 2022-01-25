@@ -1,6 +1,7 @@
 "use strict"
 
 module.exports = {
+	renderZoomLevel: 15,
 	colors: {
 		nichtWohnhaus: '#575756',
 		wohnhaus: '#1d1d1b',
