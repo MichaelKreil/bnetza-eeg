@@ -110,10 +110,10 @@ simpleCluster(async worker => {
 		}
 		feature.gebaeudeIds.forEach(id => buildingIds.add(id));
 	});
-	todo.winds.sort((a,b) => b.gebaeudeIds.length - a.gebaeudeIds.length)
+	todo.winds.sort((a,b) => a.gebaeudeIds.length - b.gebaeudeIds.length)
 	todo.winds.forEach(feature => {
 		if (feature.geometry.type === 'Point') return;
-		ctx.fillStyle = (feature.gebaeudeIds.length > 0) ? '#faa' : '#aaf';
+		ctx.fillStyle = (feature.gebaeudeIds.length > 0) ? '#fcc' : '#ccf';
 		ctx.beginPath();
 		drawArea(feature.geometry);
 		ctx.fill();
