@@ -160,14 +160,28 @@ simpleCluster(async worker => {
 				)
 
 				if (count === 1) {
-					// save baselayer background
-					let dataFolder = resolve(__dirname, '../cache/tiles/'+zoomLevel+'/'+todo.y);
+					let windData = todo.winds.map(feature => ({
+						i: feature.fid,
+						x: mercator.x(feature.properties.Laengengrad),
+						y: mercator.y(feature.properties.Breitengrad),
+						c: feature.c
+					}))
+					// save symbol data
+					let dataFolder = resolve(__dirname, '../cache/wind/'+zoomLevel+'/'+todo.y);
 					fs.mkdirSync(dataFolder, {recursive:true});
+					let filenameData = resolve(dataFolder, (todo.x*count+xi)+'.json');
+					fs.writeFileSync(filenameData, JSON.stringify(windData));
+
+
+
+					// save baselayer background
+					let tileFolder = resolve(__dirname, '../cache/tiles/'+zoomLevel+'/'+todo.y);
+					fs.mkdirSync(tileFolder, {recursive:true});
 
 					let buffer = canvasTile.toBuffer('image/png');
 					if (buffer.length <= 872) continue;
 
-					let filenamePng = resolve(dataFolder, (todo.x*count+xi)+'.png');
+					let filenamePng = resolve(tileFolder, (todo.x*count+xi)+'.png');
 					fs.writeFileSync(filenamePng, buffer);
 				}
 
