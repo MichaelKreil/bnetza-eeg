@@ -38,8 +38,10 @@ simpleCluster(async worker => {
 	]
 
 	let todos = [];
-	for (let x = bboxTilesGermany[0]; x <= bboxTilesGermany[2]; x++) {
-		for (let y = bboxTilesGermany[1]; y <= bboxTilesGermany[3]; y++) todos.push({x,y});
+	for (let y = bboxTilesGermany[3]; y >= bboxTilesGermany[1]; y--) {
+		for (let x = bboxTilesGermany[0]; x <= bboxTilesGermany[2]; x++) {
+			todos.push({x,y});
+		}
 	}
 	console.log('todos', todos.length);
 	//todos = todos.slice(14007);
