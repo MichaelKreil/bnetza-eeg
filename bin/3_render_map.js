@@ -145,7 +145,7 @@ simpleCluster(async worker => {
 			for (let xi = 0; xi < count; xi++) {
 				ctxTile.drawImage(
 					canvas,
-					xi*tileSize, yi*tileSize, tileSize*scale, tileSize*scale,
+					xi*tileSize*scale, yi*tileSize*scale, tileSize*scale, tileSize*scale,
 					0, 0, tileSize, tileSize,
 				)
 				
