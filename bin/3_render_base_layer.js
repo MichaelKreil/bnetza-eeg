@@ -147,11 +147,11 @@ simpleCluster(async worker => {
 		feature.c = (feature.gebaeudeIds.length > 0) ? colors.windDotHit : colors.windDot;
 	})
 
-	let zoom = renderZoomLevel;
+	let zoomLevel = renderZoomLevel;
 	for (let count = tileCount; count >= 1; count /= 2) {
 		let scale = tileCount/count;
 		for (let yi = 0; yi < count; yi++) {
-			let folder = resolve(__dirname, '../docs/tiles/'+zoom+'/'+(todo.y*count+yi));
+			let folder = resolve(__dirname, '../docs/tiles/'+zoomLevel+'/'+(todo.y*count+yi));
 			fs.mkdirSync(folder, {recursive:true});
 			for (let xi = 0; xi < count; xi++) {
 				ctxTile.drawImage(
@@ -162,7 +162,7 @@ simpleCluster(async worker => {
 
 				if (count === 1) {
 					// save baselayer background
-					let dataFolder = resolve(__dirname, '../cache/tiles/'+todo.y);
+					let dataFolder = resolve(__dirname, '../cache/tiles/'+zoomLevel+'/'+todo.y);
 					fs.mkdirSync(dataFolder, {recursive:true});
 
 					let buffer = canvasTile.toBuffer('image/png');
