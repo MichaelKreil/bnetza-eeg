@@ -4,8 +4,10 @@
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<base href="https://nachtrag.de" />
-	<link rel="stylesheet" type="text/css" href="/assets/main.css" />
+	<!--<link rel="stylesheet" type="text/css" href="/assets/main.css" />-->
 	<link rel="icon" href="/assets/icon1-64.png" type="image/png" />
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"></script>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css" />
 
 	<title>nachtrag: Windenergie</title>
 </head>
@@ -25,9 +27,30 @@
 				<p>
 					
 				</p>
-				<div id="map">
+				<div id="map" style="min-height: 80vh; background: #fff;">
 					
 				</div>
+				<script type="text/javascript">
+					window.addEventListener('load', () => {
+						let map = L.map('map', {
+							center: [49.5,10.7],
+							zoom:11,
+							maxZoom:16,
+							maxBounds: [[47.3,5.9],[55.0,15.1]],
+							layers: [
+								L.tileLayer('http://168.119.98.135:8080/tiles/{z}/{y}/{x}.png', {
+									noWrap:true,
+									detectRetina:false,
+									maxNativeZoom:16,
+								}),
+								L.tileLayer('http://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png', {
+									detectRetina:false,
+									maxNativeZoom:16,
+								})
+							]
+						});
+					}, {once:true});
+				</script>
 			</section>
 			<footer>
 				<p></p>
