@@ -8,8 +8,8 @@ const { forParallel, simpleCluster } = require('../lib/helper.js');
 const { colors, renderZoomLevel } = require('./config.js');
 
 
-const bboxGermany = [5.9, 47.3, 15.1, 55.0]; // Deutschland
-//const bboxGermany = [8.977, 47.270, 13.836, 50.565]; // Bayern
+//const bboxGermany = [5.9, 47.3, 15.1, 55.0]; // Deutschland
+const bboxGermany = [8.977, 47.270, 13.836, 50.565]; // Bayern
 //const bboxGermany = [13.091, 52.334, 13.743, 52.677]; // Berlin
 const zoomLevelScale = Math.pow(2, renderZoomLevel);
 const tileSize = 256;
@@ -176,10 +176,11 @@ simpleCluster(async worker => {
 				todo.winds.forEach(feature => {
 					let x = feature.x/scale - xi*tileSize;
 					let y = feature.y/scale - yi*tileSize;
-					ctx.fillStyle = feature.c;
-					ctx.beginPath();
-					ctx.arc(x,y,5,0,2*Math.PI);
-					ctx.fill();
+					let r = 6*Math.pow(1.4,zoomLevel-15);
+					ctxTile.fillStyle = feature.c;
+					ctxTile.beginPath();
+					ctxTile.arc(x,y,r,0,2*Math.PI);
+					ctxTile.fill();
 				})
 				
 				// save tile
@@ -190,7 +191,7 @@ simpleCluster(async worker => {
 				fs.writeFileSync(filenamePng, buffer);
 			}
 		}
-		zoom--;
+		zoomLevel--;
 	}
 
 	function drawArea(geometry) {
