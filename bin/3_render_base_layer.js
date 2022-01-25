@@ -8,8 +8,8 @@ const { forParallel, simpleCluster } = require('../lib/helper.js');
 const { colors, renderZoomLevel } = require('./config.js');
 
 
-//const bboxGermany = [5.9, 47.3, 15.1, 55.0]; // Deutschland
-const bboxGermany = [8.977, 47.270, 13.836, 50.565]; // Bayern
+const bboxGermany = [5.9, 47.3, 15.1, 55.0]; // Deutschland
+//const bboxGermany = [8.977, 47.270, 13.836, 50.565]; // Bayern
 //const bboxGermany = [13.091, 52.334, 13.743, 52.677]; // Berlin
 const zoomLevelScale = Math.pow(2, renderZoomLevel);
 const tileSize = 256;
