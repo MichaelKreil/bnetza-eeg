@@ -127,8 +127,8 @@ simpleCluster(async worker => {
 	})
 
 	todo.winds.forEach(feature => {
-		ctx.fillStyle = (feature.gebaeudeIds.length > 0) ? '#f88' : '88f';
-		ctx.strokeStyle = (feature.gebaeudeIds.length > 0) ? '#f00' : '00f';
+		ctx.fillStyle = (feature.gebaeudeIds.length > 0) ? '#f88' : '#88f';
+		ctx.strokeStyle = (feature.gebaeudeIds.length > 0) ? '#f00' : '#00f';
 		drawSymbol([feature.properties.Laengengrad, feature.properties.Breitengrad]);
 	})
 
