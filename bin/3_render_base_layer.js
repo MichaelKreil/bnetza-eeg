@@ -167,10 +167,12 @@ simpleCluster(async worker => {
 						c: feature.c
 					}))
 					// save symbol data
-					let dataFolder = resolve(__dirname, '../cache/wind/'+zoomLevel+'/'+todo.y);
-					fs.mkdirSync(dataFolder, {recursive:true});
-					let filenameData = resolve(dataFolder, (todo.x*count+xi)+'.json');
-					fs.writeFileSync(filenameData, JSON.stringify(windData));
+					if (windData.length > 0) {
+						let dataFolder = resolve(__dirname, '../cache/wind/'+zoomLevel+'/'+todo.y);
+						fs.mkdirSync(dataFolder, {recursive:true});
+						let filenameData = resolve(dataFolder, (todo.x*count+xi)+'.json');
+						fs.writeFileSync(filenameData, JSON.stringify(windData));
+					}
 
 
 
