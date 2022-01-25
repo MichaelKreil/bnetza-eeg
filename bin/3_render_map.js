@@ -113,7 +113,7 @@ simpleCluster(async worker => {
 	todo.winds.sort((a,b) => b.gebaeudeIds.length - a.gebaeudeIds.length)
 	todo.winds.forEach(feature => {
 		if (feature.geometry.type === 'Point') return;
-		ctx.fillStyle = (feature.gebaeudeIds.length > 0) ? 'rgba(255,200,200,0.2)' : 'rgba(200,200,255,0.2)';
+		ctx.fillStyle = (feature.gebaeudeIds.length > 0) ? '#faa' : '#aaf';
 		ctx.beginPath();
 		drawArea(feature.geometry);
 		ctx.fill();
