@@ -18,6 +18,7 @@ async function start() {
 		.map(l => JSON.parse(l));
 
 	let allResults = [];
+	let ignoreBuildings = new Set();
 
 	for (let i = 0; i < entries.length; i++) {
 		//console.log(i);
@@ -68,8 +69,12 @@ async function start() {
 			let circle = turf.circle(p.point, radius/1000);
 			let bbox = turf.bbox(circle);
 			buildings.forEachInBBox(bbox, building => {
-				if (!building.properties.isWohngebaeude) return;
-				if (turf.booleanIntersects(circle, building)) gebaeudeIds.push(building.fid);
+				if (turf.booleanIntersects(circle, building)) {
+					let d = 1000*turf.distance(turf.centerOfMass(building), p.point);
+					if (d < 5) ignoreBuildings.add(building.fid);
+					if (!building.properties.isWohngebaeude) return;
+					gebaeudeIds.push(building.fid);
+				}
 			})
 			entry.geometry = circle.geometry;
 		}
@@ -78,6 +83,9 @@ async function start() {
 		delete entry.properties.Bundesland
 		allResults.push(entry);
 	}
+
+	ignoreBuildings = Array.from(ignoreBuildings.values());
+	fs.writeFileSync(resolve(__dirname, '../data/temp/ignoreBuildings.json'), JSON.stringify(ignoreBuildings));
 
 	allResults = {
 		type:'FeatureCollection',
