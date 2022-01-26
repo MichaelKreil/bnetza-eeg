@@ -10,5 +10,6 @@ module.exports = {
 		windAreaHit: '#f9c5af',
 		windDot: '#0075bf',
 		windDotHit: '#e30613',
-	}
+	},
+	getWindRadius: zoomLevel => 6*Math.pow(0.8,15-zoomLevel),
 }

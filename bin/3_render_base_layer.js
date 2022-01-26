@@ -5,7 +5,7 @@ const zlib = require('zlib');
 const os = require('os');
 const { resolve } = require('path');
 const { forParallel, simpleCluster } = require('../lib/helper.js');
-const { colors, renderZoomLevel } = require('./config.js');
+const { colors, renderZoomLevel, getWindRadius } = require('./config.js');
 
 
 const bboxGermany = [5.9, 47.3, 15.1, 55.0]; // Deutschland
@@ -190,7 +190,7 @@ simpleCluster(async worker => {
 				todo.winds.forEach(feature => {
 					let x = feature.x/scale - xi*tileSize;
 					let y = feature.y/scale - yi*tileSize;
-					let r = 6*Math.pow(1.4,zoomLevel-15);
+					let r = getWindRadius(zoomLevel);
 					ctxTile.fillStyle = feature.c;
 					ctxTile.beginPath();
 					ctxTile.arc(x,y,r,0,2*Math.PI);

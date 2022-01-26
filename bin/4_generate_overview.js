@@ -3,10 +3,15 @@
 const fs = require('fs');
 const { createCanvas, loadImage } = require('canvas');
 const { resolve } = require('path');
-const maxZoomLevel = 10;
+
+const config = require('./config.js');
+
+const maxZoomLevel = config.renderZoomLevel-5;
 const size = 256;
 const halfSize = size/2;
-const tileDir = resolve(__dirname, '../docs/tiles');
+const windDirSrc = resolve(__dirname, '../cache/wind');
+const tileDirSrc = resolve(__dirname, '../cache/tiles');
+const tileDirDst = resolve(__dirname, '../docs/tiles');
 
 start()
 
@@ -16,10 +21,11 @@ async function start() {
 	//ctx.globalCompositeOperation = 'copy';
 
 	for (let zoomLevel = maxZoomLevel; zoomLevel >= 0; zoomLevel--) {
-		console.error('zoomLevel:',zoomLevel)
+		let scale = Math.pow(2,zoomLevel);
 		let tiles = new Map();
 
-		let zoomDirSrc = resolve(tileDir, zoomLevel+1+'');
+		// scan for tiles
+		let zoomDirSrc = resolve(tileDirSrc, zoomLevel+1+'');
 		fs.readdirSync(zoomDirSrc).forEach(y => {
 			if (!/^[0-9]+$/.test(y)) return;
 			y = parseInt(y, 10);
@@ -38,16 +44,16 @@ async function start() {
 
 		tiles = Array.from(tiles.values());
 		for (let i = 0; i < tiles.length; i++) {
-			if (i % 100 === 0) process.stderr.write('\r'+(100*i/tiles.length).toFixed(1)+'%');
+			if (i % 10 === 0) process.stderr.write(`\rlevel ${zoomLevel} - ${(100*i/tiles.length).toFixed(1)}%`);
 
-			let {x0,y0,children} = tiles[i]
+			// init tile
+			let { x0,y0,children } = tiles[i]
 			ctx.fillStyle = '#fff';
 			ctx.fillRect(0,0,size,size);
 
+
 			for (let {x,y} of children) {
-				//console.error((x-x0*2)*halfSize, (y-y0*2)*halfSize);
-				let filename = resolve(tileDir, (zoomLevel+1)+'/'+y+'/'+x+'.png');
-				let image = await loadImage(filename);
+				let image = await loadImage(resolve(tileDirSrc, (zoomLevel+1)+'/'+y+'/'+x+'.png'));
 				ctx.drawImage(
 					image,
 					0, 0, size, size,
@@ -55,10 +61,51 @@ async function start() {
 				)
 			}
 
-			let filename = resolve(tileDir, zoomLevel+'/'+y0);
+			let filename
+
+			// save base tile
+			filename = resolve(tileDirSrc, zoomLevel+'/'+y0);
 			fs.mkdirSync(filename, {recursive:true});
-			filename = resolve(filename, x0+'.png');
-			fs.writeFileSync(filename, canvas.toBuffer('image/png'));
+			fs.writeFileSync(resolve(filename, x0+'.png'), canvas.toBuffer('image/png'));
+
+			// load wind data
+			filename = resolve(windDirSrc, zoomLevel+'/'+y0);
+			fs.mkdirSync(filename, {recursive:true});
+			filename = resolve(filename, x0+'.json');
+
+			let winds = new Map();
+			if (fs.existsSync(filename)) {
+				winds = JSON.parse(fs.readFileSync(filename));
+			} else {
+
+				// generate wind data
+				let winds = new Map();
+				for (let {x,y} of children) {
+					let wind = resolve(windDirSrc, (zoomLevel+1)+'/'+y+'/'+x+'.json');
+					if (!fs.existsSync(wind)) continue;
+					wind = JSON.parse(fs.readFileSync(wind));
+					wind.forEach(w => winds.set(w.i, w));
+				}
+				winds = Array.from(winds.values());
+				fs.writeFileSync(filename, JSON.stringify(winds));
+			}
+
+			// overlay wind dots
+			winds.forEach(w => {
+				let x = (w.x*scale - x0)*size;
+				let y = (w.y*scale - y0)*size;
+				let r = config.getWindRadius(zoomLevel);
+				ctx.fillStyle = w.c;
+				ctx.beginPath();
+				ctx.arc(x,y,r,0,2*Math.PI);
+				ctx.fill();
+			})
+
+			// save final tile
+			filename = resolve(tileDirDst, zoomLevel+'/'+y0);
+			fs.mkdirSync(filename, {recursive:true});
+			fs.writeFileSync(resolve(filename, x0+'.png'), canvas.toBuffer('image/png'));
 		}
+		console.log('');
 	}
 }
