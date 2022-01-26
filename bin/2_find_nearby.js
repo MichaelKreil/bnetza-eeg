@@ -22,7 +22,7 @@ async function start() {
 
 	for (let i = 0; i < entries.length; i++) {
 		//console.log(i);
-		if (i % 100 === 0) process.stderr.write('\r'+(100*i/entries.length).toFixed(1)+'%')
+		if (i % 10 === 0) process.stderr.write('\r'+(100*i/entries.length).toFixed(1)+'%')
 
 		let entry = entries[i];
 		let p = entry.properties;
