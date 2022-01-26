@@ -3,29 +3,52 @@
 <head>
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<base href="https://nachtrag.de" />
+	<base href="" />
 	<!--<link rel="stylesheet" type="text/css" href="/assets/main.css" />-->
 	<link rel="icon" href="/assets/icon1-64.png" type="image/png" />
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"></script>
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css" />
+	<style type="text/css">
+		body {
+			margin: 0;
+			background: #fff;
+			color: #000;
+			font-family: sans-serif;
+			font-size: 12px;
+		}
+		h1 {
+			text-align: center;
+			margin: 10px 0 10px;
+		}
+		p {
+			max-width: 800px;
+			box-sizing: border-box;
+			margin: 5px auto 5px;
+		}
+		a {
+			color: inherit;
+		}
+	</style>
 
-	<title>nachtrag: Windenergie</title>
+	<title>Windenergie</title>
 </head>
 <body>
 	<main>
-		<header>
-			<nav>
-				<a href="/" class="selected">nachtrag:</a>
-				<a href="" class="selected">Windenergie</a>
-			</nav>
-		</header>
 		<article>
 			<header>
-				<h1 class="text">Windenergie</h1>
+				<h1>Welche Windräder verstoßen gegen die neuen Abstandregelungen?</h1>
 			</header>
-			<section class="text">
+			<section>
 				<p>
-					
+					Seit der <a href="https://kommunalwiki.boell.de/index.php/L%C3%A4nder%C3%B6ffnungsklausel">Länderöffnungsklausel</a> der alten Bundesregierung ist es möglich, dass Bundesländer <a href="https://www.fachagentur-windenergie.de/fileadmin/files/PlanungGenehmigung/FA_Wind_Abstandsempfehlungen_Laender.pdf">Mindestabstände zwischen Windrädern und Wohngebäude</a> festlegen dürfen, wie z.B. die <a href="https://kommunalwiki.boell.de/index.php/10H-Regelung">10H-Regelung in Bayern</a>. Mit der amtlichen Datenbank aller Gebäude in Deutschland, gegen deren Veröffentlichung die <a href="https://www.adv-online.de/AdV-Produkte/Vertriebsstellen/ZSHH/">ZSHH</a> juristisch vorgeht, können wir erstmals sehen, wieviele Windräder in Deutschland von den Mindestabständen betroffen sind.
+				</p>
+				<p>
+					Windräder sind als rot und blaue Punkte dargestellt. Rot heißt, dass sie eigentlich gegen die Abstandsregelung verstoßen. Blaue Windräder halten den Mindestabstand ein.<br>
+					Um die einzelnen Windräder sind in hellrot/hellblau die berechneten Mindestabstände (je nach Bundesland) als Kreis dargestellt. Falls ein Wohngebäude in den Mindestabstand fällt, ist das Wohngebäude dunkelrot. Andernfalls ist es schwarz.<br>
+					Gebäude, die keine Wohngebäude sind, also z.B. Supermärkte, Fabriken, Kirchen etc., werden grau dargestellt, da für sie die Abstandsregelungen zu Wohngebäuden nicht gilt.
+				</p>
+				<p>
+					Es werden nur Abstandsregelungen zu Wohngebäuden berücksichtigt. Regelungen bzgl. Siedlungs-, Naturschutz-, Industrie-, Erholungsgebieten usw. werden hier nicht betrachtet.
 				</p>
 				<div id="map" style="min-height: 80vh; background: #fff;">
 					
@@ -33,8 +56,8 @@
 				<script type="text/javascript">
 					window.addEventListener('load', () => {
 						let map = L.map('map', {
-							center: [48.26,11.434],
-							zoom:13,
+							center: [51.1,10.5],
+							zoom:6,
 							maxZoom:15,
 							maxBounds: [[47.3,5.9],[55.0,15.1]],
 							layers: [
