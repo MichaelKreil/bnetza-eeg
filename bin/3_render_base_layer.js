@@ -82,9 +82,8 @@ simpleCluster(async worker => {
 		}
 
 		let zoom = renderZoomLevel - Math.round(Math.log2(tileCount));
-		let tileFilename = resolve(__dirname, '../docs/tiles/'+zoom+'/'+todo.y+'/'+todo.x+'.png');
-
-		if (fs.existsSync(tileFilename)) return;
+		let windFilename = resolve(__dirname, '../cache/wind/'+zoom+'/'+todo.y+'/'+todo.x+'.json');
+		if (fs.existsSync(windFilename)) return;
 
 		await worker(dataFilename)
 	})
