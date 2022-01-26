@@ -3,7 +3,7 @@
 const fs = require('fs');
 const { createCanvas, loadImage } = require('canvas');
 const { resolve } = require('path');
-const maxZoomLevel = 11;
+const maxZoomLevel = 10;
 const size = 256;
 const halfSize = size/2;
 const tileDir = resolve(__dirname, '../docs/tiles');

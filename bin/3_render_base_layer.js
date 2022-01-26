@@ -121,8 +121,6 @@ simpleCluster(async worker => {
 		ctx.fill();
 	})
 
-	ctx.strokeStyle = colors.wohnhaus;
-	ctx.lineWidth = 1.5;
 	todo.buildings.forEach(building => {
 		if (building.properties.isWohngebaeude) {
 			ctx.fillStyle = buildingIds.has(building.fid) ? colors.wohnhausHit : colors.wohnhaus;
@@ -130,9 +128,10 @@ simpleCluster(async worker => {
 			drawArea(building.geometry);
 			ctx.fill();
 		} else {
+			ctx.fillStyle = colors.keinWohnhaus;
 			ctx.beginPath();
 			drawArea(building.geometry);
-			ctx.stroke();
+			ctx.fill();
 		}
 	})
 

@@ -3,6 +3,7 @@
 module.exports = {
 	renderZoomLevel: 15,
 	colors: {
+		keinWohnhaus: '#9d9d9c',
 		wohnhaus: '#1d1d1b',
 		wohnhausHit: '#8a1002',
 		windArea: '#bccdeb',
