@@ -48,6 +48,7 @@ simpleCluster(async worker => {
 
 	const buildingDB = require('../lib/gebaeude.js');
 	const windDB = require('../lib/wind.js');
+	const ignoreBuildings = new Set(JSON.parse(fs.readFileSync(resolve(__dirname, '../data/temp/ignoreBuildings.json'))));
 
 	await forParallel(todos, workerCount, async (todo, i) => {
 		process.stderr.write('\r'+(100*i/todos.length).toFixed(2)+'%');
@@ -76,6 +77,12 @@ simpleCluster(async worker => {
 				x: todo.x,
 				y: todo.y,
 			}
+			data.winds.forEach(w => {
+				w.properties.gebaeudeIds = w.properties.gebaeudeIds
+					.split(',')
+					.map(id => parseInt(id, 10))
+					.filter(id => !ignoreBuildings.has(id));
+			})
 			data = Buffer.from(JSON.stringify(data));
 			data = await new Promise(res => zlib.gzip(data, (a,b) => res(b)));
 			fs.writeFileSync(dataFilename, data);
@@ -102,14 +109,11 @@ simpleCluster(async worker => {
 	ctx.fillStyle = '#fff';
 	ctx.fillRect(0,0,size,size);
 
-	let buildingIds = new Set();
+	let wohnIds = new Set();
 	todo.winds.forEach(feature => {
 		feature.gebaeudeIds = [];
 		if (feature.geometry.type === 'Point') return;
-		if (feature.properties.gebaeudeIds.length > 3) {
-			feature.gebaeudeIds = feature.properties.gebaeudeIds.split(',').map(id => parseInt(id, 10));
-		}
-		feature.gebaeudeIds.forEach(id => buildingIds.add(id));
+		feature.gebaeudeIds.forEach(id => wohnIds.add(id));
 	});
 	todo.winds.sort((a,b) => a.gebaeudeIds.length - b.gebaeudeIds.length)
 	todo.winds.forEach(feature => {
@@ -122,7 +126,7 @@ simpleCluster(async worker => {
 
 	todo.buildings.forEach(building => {
 		if (building.properties.isWohngebaeude) {
-			ctx.fillStyle = buildingIds.has(building.fid) ? colors.wohnhausHit : colors.wohnhaus;
+			ctx.fillStyle = wohnIds.has(building.fid) ? colors.wohnhausHit : colors.wohnhaus;
 			ctx.beginPath();
 			drawArea(building.geometry);
 			ctx.fill();
@@ -164,6 +168,7 @@ simpleCluster(async worker => {
 						y: mercator.y(feature.properties.Breitengrad),
 						c: feature.c
 					}))
+
 					// save symbol data
 					if (windData.length > 0) {
 						let dataFolder = resolve(__dirname, '../cache/wind/'+zoomLevel+'/'+todo.y);
@@ -171,8 +176,6 @@ simpleCluster(async worker => {
 						let filenameData = resolve(dataFolder, (todo.x*count+xi)+'.json');
 						fs.writeFileSync(filenameData, JSON.stringify(windData));
 					}
-
-
 
 					// save baselayer background
 					let tileFolder = resolve(__dirname, '../cache/tiles/'+zoomLevel+'/'+todo.y);
