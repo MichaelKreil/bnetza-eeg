@@ -38,9 +38,11 @@ simpleCluster(async worker => {
 	]
 
 	let todos = [];
+	let zoomLevel = renderZoomLevel - Math.round(Math.log2(tileCount));
 	for (let y = bboxTilesGermany[3]; y >= bboxTilesGermany[1]; y--) {
 		for (let x = bboxTilesGermany[0]; x <= bboxTilesGermany[2]; x++) {
-			todos.push({x,y});
+			let windFilename = resolve(__dirname, '../cache/wind/'+zoomLevel+'/'+y+'/'+x+'.json');
+			if (!fs.existsSync(windFilename)) todos.push({x,y});
 		}
 	}
 	console.log('todos', todos.length);
@@ -51,10 +53,9 @@ simpleCluster(async worker => {
 	const ignoreBuildings = new Set(JSON.parse(fs.readFileSync(resolve(__dirname, '../data/temp/ignoreBuildings.json'))));
 
 	await forParallel(todos, workerCount, async (todo, i) => {
-		process.stderr.write('\r'+(100*i/todos.length).toFixed(2)+'%');
+		process.stderr.write(`\r(${todo.y},${todo.x}) - ${(100*i/todos.length).toFixed(2)}%`);
 
 		let dataFolder = resolve(__dirname, '../cache/geometry/'+todo.y);
-		fs.mkdirSync(dataFolder, {recursive:true});
 		let dataFilename = resolve(dataFolder, todo.x+'.json.gz');
 
 		if (!fs.existsSync(dataFilename)) {
@@ -80,17 +81,16 @@ simpleCluster(async worker => {
 			data.winds.forEach(w => {
 				w.properties.gebaeudeIds = w.properties.gebaeudeIds
 					.split(',')
+					.filter(id => id.length > 0)
 					.map(id => parseInt(id, 10))
 					.filter(id => !ignoreBuildings.has(id));
 			})
 			data = Buffer.from(JSON.stringify(data));
 			data = await new Promise(res => zlib.gzip(data, (a,b) => res(b)));
+
+			fs.mkdirSync(dataFolder, {recursive:true});
 			fs.writeFileSync(dataFilename, data);
 		}
-
-		let zoom = renderZoomLevel - Math.round(Math.log2(tileCount));
-		let windFilename = resolve(__dirname, '../cache/wind/'+zoom+'/'+todo.y+'/'+todo.x+'.json');
-		if (fs.existsSync(windFilename)) return;
 
 		await worker(dataFilename)
 	})
@@ -99,7 +99,7 @@ simpleCluster(async worker => {
 	todo = zlib.gunzipSync(todo);
 	todo = JSON.parse(todo);
 
-	if ((todo.buildings.length === 0) && (todo.winds.length === 0)) return;
+	//if ((todo.buildings.length === 0) && (todo.winds.length === 0)) return;
 
 	const { createCanvas } = require('canvas');
 
@@ -111,8 +111,7 @@ simpleCluster(async worker => {
 
 	let wohnIds = new Set();
 	todo.winds.forEach(feature => {
-		feature.gebaeudeIds = [];
-		if (feature.geometry.type === 'Point') return;
+		feature.gebaeudeIds = feature.properties.gebaeudeIds;
 		feature.gebaeudeIds.forEach(id => wohnIds.add(id));
 	});
 	todo.winds.sort((a,b) => a.gebaeudeIds.length - b.gebaeudeIds.length)
@@ -170,12 +169,10 @@ simpleCluster(async worker => {
 					}))
 
 					// save symbol data
-					if (windData.length > 0) {
-						let dataFolder = resolve(__dirname, '../cache/wind/'+zoomLevel+'/'+todo.y);
-						fs.mkdirSync(dataFolder, {recursive:true});
-						let filenameData = resolve(dataFolder, (todo.x*count+xi)+'.json');
-						fs.writeFileSync(filenameData, JSON.stringify(windData));
-					}
+					let dataFolder = resolve(__dirname, '../cache/wind/'+zoomLevel+'/'+todo.y);
+					fs.mkdirSync(dataFolder, {recursive:true});
+					let filenameData = resolve(dataFolder, (todo.x*count+xi)+'.json');
+					fs.writeFileSync(filenameData, JSON.stringify(windData));
 
 					// save baselayer background
 					let tileFolder = resolve(__dirname, '../cache/tiles/'+zoomLevel+'/'+todo.y);

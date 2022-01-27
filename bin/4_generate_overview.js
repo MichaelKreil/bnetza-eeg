@@ -73,13 +73,13 @@ async function start() {
 			fs.mkdirSync(filename, {recursive:true});
 			filename = resolve(filename, x0+'.json');
 
-			let winds = new Map();
+			let winds;
 			if (fs.existsSync(filename)) {
 				winds = JSON.parse(fs.readFileSync(filename));
 			} else {
 
 				// generate wind data
-				let winds = new Map();
+				winds = new Map();
 				for (let {x,y} of children) {
 					let wind = resolve(windDirSrc, (zoomLevel+1)+'/'+y+'/'+x+'.json');
 					if (!fs.existsSync(wind)) continue;
